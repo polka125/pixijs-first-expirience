@@ -1,0 +1,23 @@
+{
+  "name": "code-and-run",
+  "version": "1.0.0",
+  "description": "website for learning and gaming",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "python",
+    "game",
+    "2d"
+  ],
+  "author": "Sergey Novozhilov",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "http-server": "^0.12.3",
+    "nodemon": "^2.0.12",
+    "pixi.js": "^6.1.1"
+  }
+}

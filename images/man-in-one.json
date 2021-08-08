@@ -1,0 +1,95 @@
+{"frames": {
+
+"manmovement_01.gif":
+{
+	"frame": {"x":0,"y":0,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_02.gif":
+{
+	"frame": {"x":0,"y":128,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_03.gif":
+{
+	"frame": {"x":0,"y":256,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_04.gif":
+{
+	"frame": {"x":0,"y":384,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_05.gif":
+{
+	"frame": {"x":0,"y":512,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_11.gif":
+{
+	"frame": {"x":0,"y":640,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_12.gif":
+{
+	"frame": {"x":0,"y":768,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_13.gif":
+{
+	"frame": {"x":0,"y":896,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_14.gif":
+{
+	"frame": {"x":0,"y":1024,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+},
+"manmovement_15.gif":
+{
+	"frame": {"x":0,"y":1152,"w":64,"h":128},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":64,"h":128},
+	"sourceSize": {"w":64,"h":128}
+}},
+"animations": {
+	"manmovement": ["manmovement_01.gif","manmovement_02.gif","manmovement_03.gif","manmovement_04.gif","manmovement_05.gif","manmovement_11.gif","manmovement_12.gif","manmovement_13.gif","manmovement_14.gif","manmovement_15.gif"]
+},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "man-in-one.png",
+	"format": "RGBA8888",
+	"size": {"w":64,"h":1280},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:4b3c5c767717162f5a2329a0becc15e8:f349986568679c0752bb98978a46a901:f9928ffa81fd968622f72f4a31243386$"
+}
+}

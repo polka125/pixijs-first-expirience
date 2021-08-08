@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>code and run</title>
+</head>
+<body>
+    <h1>Лучше, чем игра года</h1>
+
+    <div class="game-count"></div>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+        .game-count {
+            position: absolute;
+            height: 3em;
+            width: 10em;
+            padding: 5px;
+            border: solid 5px;
+            border-color: blueviolet;
+            right: 0;
+            top: 0;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.1.3/pixi.min.js"></script>
+    <script type="text/javascript">
+
+                //Aliases
+        let Application = PIXI.Application,
+            Container = PIXI.Container,
+            loader = PIXI.loader,
+            resources = PIXI.loader.resources,
+            Graphics = PIXI.Graphics,
+            TextureCache = PIXI.utils.TextureCache,
+            Sprite = PIXI.Sprite,
+            Text = PIXI.Text,
+            TextStyle = PIXI.TextStyle;
+
+        //Create a Pixi Application
+        let app = new Application({ 
+            width: 64 * 10 + 2, 
+            height: 64 * 4,                       
+            antialiasing: true, 
+            transparent: false, 
+            resolution: 1
+        }
+        );
+
+        //Add the canvas that Pixi automatically created for you to the HTML document
+        document.body.appendChild(app.view);
+        app.renderer.backgroundColor = 0xffffff;
+
+        loader
+            .add("images/man-in-one.json")
+            .add("images/background.gif")
+            .add("images/hedgehog.gif")
+            .add("images/wall.gif")
+            .load(setup);
+
+        //Define variables that might be used in more 
+        //than one function
+        let state, explorer, treasure, blobs, chimes, exit, player, dungeon,
+            door, healthBar, message, gameScene, gameOverScene, enemies, id, 
+            man, walkingman, gameLoopCnt, frameCnt, manJumpUp, manJumpDown, manWalk, script,
+            scriptPtr, lastVisible, scenarious, manBJump1Up, manBJump2Up, manBJump1Down, manBJump2Down,
+            bgrnd, obstList, obstScene, pendingAction, timer, gameEnd;
+
+        function setup() {
+            gameEnd = false;
+            timer = 0;
+            pendingAction = "w"
+
+            //background
+            resources["images/background.gif"].texture.frame = new PIXI.Rectangle(0, 0, 64 * 18, 4 * 64)
+            bgrnd = [new Sprite(resources["images/background.gif"].texture), new Sprite(resources["images/background.gif"].texture)];
+            
+            bgrnd[1].x = bgrnd[0].texture.width
+            bgrnd.forEach(el => {
+                app.stage.addChild(el);
+            });
+
+            //obstackles
+            obstList = {
+                "hedge": resources["images/hedgehog.gif"].texture, 
+                "wall": resources["images/wall.gif"].texture
+            }
+            obstScene = []
+            addEnemy("hedge", 3);
+            addEnemy("wall", 5);
+
+            //Make the sprites and add them to the `gameScene`
+            //Create an alias for the texture atlas frame ids
+            id = resources["images/man-in-one.json"].textures;
+
+            manWalk =     [new Sprite(id["manmovement_01.gif"]), new Sprite(id["manmovement_02.gif"]), new Sprite(id["manmovement_03.gif"]), new Sprite(id["manmovement_04.gif"])]
+            manJumpUp =   [new Sprite(id["manmovement_11.gif"]), new Sprite(id["manmovement_12.gif"]), new Sprite(id["manmovement_13.gif"]), new Sprite(id["manmovement_14.gif"])]
+            manJumpDown = [new Sprite(id["manmovement_15.gif"]), new Sprite(id["manmovement_14.gif"]), new Sprite(id["manmovement_12.gif"]), new Sprite(id["manmovement_11.gif"])]
+            manBJump1Up = [new Sprite(id["manmovement_11.gif"]), new Sprite(id["manmovement_12.gif"]), new Sprite(id["manmovement_12.gif"]), new Sprite(id["manmovement_13.gif"])]
+            manBJump2Up = [new Sprite(id["manmovement_13.gif"]), new Sprite(id["manmovement_14.gif"]), new Sprite(id["manmovement_14.gif"]), new Sprite(id["manmovement_15.gif"])]
+            manBJump2Down = manBJump2Up.slice().reverse()
+            manBJump1Down = manBJump1Up.slice().reverse()
+
+            let baseShift = 64 * 2;
+            let frameShift = 16;
+
+            manWalk.forEach(el => {
+                app.stage.addChild(el);                
+                el.y = baseShift;
+                el.visible = false;
+            });
+
+            let tmp = 0;
+            manJumpUp.forEach(el => {
+                el.y = baseShift + tmp;
+                tmp -= frameShift;
+                app.stage.addChild(el);                
+                el.visible = false;
+            });
+
+
+            tmp = 0;
+
+            //gameOver
+            //Create the `gameOver` scene
+            gameOverScene = new Container();
+            app.stage.addChild(gameOverScene);
+
+            //Make the `gameOver` scene invisible when the game first starts
+            gameOverScene.visible = false;
+
+            //Create the text sprite and add it to the `gameOver` scene
+            let style = new TextStyle({
+                fontFamily: "Futura",
+                fontSize: 64,
+                fill: "red"
+            });
+            message = new Text("The End!", style);
+            message.x = 120;
+            message.y = app.stage.height / 2 - 32;
+            gameOverScene.addChild(message);
+
+
+            // values of parabola 32*x*(x-4) at points x=k/4: 
+            let bigJumpDiffs = [0, -30, -56, -78, -96, -110, -120, -126, -128]
+            
+            manJumpDown.forEach(el => {
+                //64 is blockside
+                el.y = baseShift - 64 + tmp;
+                app.stage.addChild(el);
+                tmp += frameShift                
+                el.visible = false;
+            });
+            tmp = 0
+            manBJump1Up.forEach(el => {
+                el.y = baseShift + bigJumpDiffs[tmp];
+                tmp += 1;
+                app.stage.addChild(el);                
+                el.visible = false;
+            });
+            manBJump2Up.forEach(el => {
+                el.y = baseShift + bigJumpDiffs[tmp];
+                tmp += 1;
+                app.stage.addChild(el);                
+                el.visible = false;
+            });
+            manWalk[0].visible = true;
+            lastVisible = manWalk[0];
+            //Set the game state
+            state = play;
+            
+            gameLoopCnt = 0;
+            frameCnt = 0;
+            scriptPtr = 0;
+
+            scenarious = {
+                "w": manWalk,
+                "ju": manJumpUp,
+                "jd": manJumpDown,
+                "jju1": manBJump1Up,
+                "jju2": manBJump2Up,
+                "jjd2": manBJump2Down,
+                "jjd1": manBJump1Down,
+            }
+
+
+            let left = keyboard(37),
+                up = keyboard(38),
+                right = keyboard(39),
+                down = keyboard(40),
+                rightShift = keyboard(16);
+            
+            up.press = function() {
+                pendingAction = "j";
+            }
+            rightShift.press = function() {
+                pendingAction = "jj";
+            }
+
+
+            script = ["w", "ju", "jd", "jju1", "jju2", "jjd2", "jjd1", "w"];
+
+            //Start the game loop 
+            app.ticker.add(delta => gameLoop(delta));
+        }
+
+
+        function gameLoop(delta){
+            if (gameEnd) {
+                if (!gameOverScene.visible) {
+                    gameOverScene.visible = true;
+                }
+                return;
+            }
+
+            //Update the current game state:
+            frameCnt++;
+            frameCnt %= 5;
+            if (frameCnt == 0) {
+                state(delta);
+                gameLoopCnt++;
+                if (gameLoopCnt % 4 == 0) {
+
+                    console.log(`heih: ${lastVisible.y}`)
+
+                    if (obstScene.length != 0 && Math.abs(obstScene[0].x) < 16 && (lastVisible.y + 128 >= obstScene[0].y + 64)) {
+                        gameEnd = true;
+                        return;
+                    }
+
+                    let curcnt = document.querySelector(".game-count").innerHTML
+                    if (curcnt === "") {
+                        curcnt = "0";
+                    }
+                    document.querySelector(".game-count").innerHTML = parseInt(curcnt) + 1
+                    console.log(curcnt);
+
+                    scriptPtr++;
+                    gameLoopCnt = 0;
+                    if (timer === 0) {
+                        if (pendingAction == "w") {
+                            scriptPtr = 0;
+                            timer = 1;
+                        } else if (pendingAction == "j") {
+                            scriptPtr = 1;
+                            pendingAction = "w";
+                            timer = 2;
+                        } else if (pendingAction == "jj") {
+                            scriptPtr = 3;
+                            pendingAction = "w";
+                            timer = "4";
+                        }
+                    }
+                    
+                    timer--;
+                }
+            }
+        }
+
+        function moveEverythingLeft(shift) {
+            // console.log(gameLoopCnt, scriptPtr, )
+            bgrnd.forEach(el => {
+                el.x -= shift;
+            });
+
+            obstScene.forEach(el => {
+                el.x -= shift;
+            })
+   
+        }
+
+        function play(delta) {
+            if (gameLoopCnt == 0 && obstScene.length < 4) {
+                if (getRandomInt(100) % 7 === 0) {
+                    addEnemy("hedge", 12);
+                } else if (getRandomInt(100) % 15 === 0) {
+                    addEnemy("wall", 12);
+                }
+            }
+
+            moveEverythingLeft(16);
+
+            obstScene = obstScene.filter(it => it.x >= -64)
+            if (bgrnd[1].x <= 0) {
+                bgrnd.reverse();
+                bgrnd[1].x = bgrnd[0].texture.width;
+            }
+
+
+            lastVisible.visible = false;
+            scenarious[script[scriptPtr]][gameLoopCnt].visible = true;
+            lastVisible = scenarious[script[scriptPtr]][gameLoopCnt];
+            return;
+        }
+
+        function addEnemy(name, pos) {
+            console.log(obstList[name])
+            let newEnemy = new Sprite(obstList[name]);
+            console.log(newEnemy);
+            newEnemy.x = pos * 64;
+            newEnemy.y = 64 * 4 - newEnemy.texture.height;
+            obstScene.push(newEnemy);
+            app.stage.addChild(newEnemy);
+        }
+        
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        //The `keyboard` helper function
+        function keyboard(keyCode) {
+            var key = {};
+            key.code = keyCode;
+            key.isDown = false;
+            key.isUp = true;
+            key.press = undefined;
+            key.release = undefined;
+            //The `downHandler`
+            key.downHandler = function(event) {
+                if (event.keyCode === key.code) {
+                    if (key.isUp && key.press) key.press();
+                        key.isDown = true;
+                        key.isUp = false;
+                }
+                event.preventDefault();
+            };
+
+            //The `upHandler`
+            key.upHandler = function(event) {
+                if (event.keyCode === key.code) {
+                    if (key.isDown && key.release) key.release();
+                        key.isDown = false;
+                        key.isUp = true;
+                }
+                event.preventDefault();
+            };
+
+            //Attach event listeners
+            window.addEventListener(
+                "keydown", key.downHandler.bind(key), false
+            );
+            window.addEventListener(
+                "keyup", key.upHandler.bind(key), false
+            );
+            return key;
+        }
+    </script>
+
+
+</body>
+</html>
